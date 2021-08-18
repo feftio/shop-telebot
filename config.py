@@ -1,16 +1,19 @@
-def _(name: str) -> str:
-    with open(f'{name}.html', 'r', encoding='utf-8') as f:
-        return ''.join(f.readlines())
-
+from utils import _, get_token, get_admins
 
 # Configuration
-TOKEN = ''
-ADMINS = []
+TOKEN = get_token('secret/token')
+ADMINS = get_admins('secret/admins')
 PRODUCTS = {
     'Брюки': _('views/products/брюки'),
-    'Рубашки': _('views/products/рубашки')
+    'Рубашки': _('views/products/рубашки'),
+    'Галстуки': _('views/products/рубашки')
 }
-MENU_VIEW = _('views/menu')
-START_VIEW = _('views/start')
-ADMIN_VIEW = _('views/admin')
-SENT_VIEW = _('views/sent')
+VIEWS = {
+    'START': _('views/start'),
+    'START_ADMIN': _('views/start_admin'),
+    'MENU': _('views/menu'),
+    'SENT_ADMIN': _('views/sent_admin'),
+    'SENT': _('views/sent'),
+    'NO_PRODUCT': _('views/no_product'),
+    'NO_COMMAND': _('views/no_command')
+}
