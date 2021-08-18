@@ -5,8 +5,7 @@ TOKEN = get_token('secret/token')
 ADMINS = get_admins('secret/admins')
 PRODUCTS = {
     'Брюки': _('views/products/брюки'),
-    'Рубашки': _('views/products/рубашки'),
-    'Галстуки': _('views/products/рубашки')
+    'Рубашки': _('views/products/рубашки')
 }
 VIEWS = {
     'START': _('views/start'),
