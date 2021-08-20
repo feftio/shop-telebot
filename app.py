@@ -5,28 +5,31 @@ from telebot import apihelper
 from telebot import types
 import json
 import config
+from utils import Event
 
 
-admins: t.List[int] = config.ADMINS
-token: str = config.TOKEN
-products: t.Dict[str, str] = config.PRODUCTS
-views: t.Dict[str, str] = config.VIEWS
+ADMINS: t.List[int] = config.ADMINS
+TOKEN: str = config.TOKEN
+PRODUCTS: t.Dict[str, str] = config.PRODUCTS
+VIEWS: t.Dict[str, str] = config.VIEWS
+PRODUCT_NAMES: t.List[str] = list(PRODUCTS.keys())
+PRODUCT_DESCRIPTIONS: t.List[str] = list(PRODUCTS.values())
+PRODUCT_COUNT: int = len(PRODUCT_NAMES)
 
 
 apihelper.ENABLE_MIDDLEWARE = True
-bot = telebot.TeleBot(token=token, parse_mode='HTML')
-product_names = list(products.keys())
-product_descriptions = list(products.values())
-product_count = len(product_names)
+bot: telebot.TeleBot = telebot.TeleBot(token=TOKEN, parse_mode='HTML')
 
 
-def create_event(type: str, payload: str = '') -> str:
-    return json.dumps({'type': type, 'payload': payload})
+def buy_button(product_index: int):
+    return types.InlineKeyboardMarkup().add(types.InlineKeyboardButton(
+        text="Купить",
+        callback_data=Event.dumps('buy', product_index)))
 
 
 @bot.middleware_handler(update_types=['message'])
 def modify_message(bot_instance, message: types.Message):
-    if message.chat.id in admins:
+    if message.chat.id in ADMINS:
         message.is_admin = True
     else:
         message.is_admin = False
@@ -34,59 +37,69 @@ def modify_message(bot_instance, message: types.Message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def query_handler(call: types.CallbackQuery):
-    event = json.loads(call.data)
-    if event['type'] == 'show_menu':
-        product_names_formatted = ''
-        for i in range(product_count):
-            product_names_formatted += f'/{i + 1} {product_names[i]}\n'
-        bot.send_message(call.message.chat.id, views['MENU'].format(
-            product_names=product_names_formatted))
-    if event['type'] == 'buy_product':
-        for admin in admins:
-            bot.send_message(admin, views['SENT_ADMIN'].format(
+    event = Event.loads(call.data)
+    if event.name == 'buy':
+        for admin in ADMINS:
+            bot.send_message(chat_id=admin, text=VIEWS['SENT_ADMIN'].format(
                 user_id=call.from_user.id,
                 user_name=call.from_user.full_name,
-                product_name=product_names[event['payload'] - 1]))
-        bot.send_message(call.from_user.id, views['SENT'])
+                product_name=PRODUCT_NAMES[event.data]))
+        return bot.send_message(
+            chat_id=call.from_user.id,
+            text=VIEWS['SENT'])
+    if event.name == 'description':
+        return bot.send_message(
+            chat_id=call.from_user.id,
+            text=PRODUCT_DESCRIPTIONS[event.data],
+            reply_markup=buy_button(event.data) if not (call.from_user.id in ADMINS) else None)
 
 
 @bot.message_handler(commands=['start'])
 def start(message: types.Message):
-    keyboard = types.InlineKeyboardMarkup()
-    menu_button = types.InlineKeyboardButton(
-        text='Меню', callback_data=create_event('show_menu'))
-    keyboard.add(menu_button)
+    keyboard = types.ReplyKeyboardMarkup()
+    for product_name in PRODUCT_NAMES:
+        keyboard.add(product_name)
     if message.is_admin:
-        return bot.send_message(message.chat.id, views['START_ADMIN'], reply_markup=keyboard)
-    bot.send_message(message.chat.id, views['START'], reply_markup=keyboard)
+        return bot.send_message(
+            chat_id=message.chat.id,
+            text=VIEWS['START_ADMIN'],
+            reply_markup=keyboard)
+    bot.send_message(
+        chat_id=message.chat.id,
+        text=VIEWS['START'],
+        reply_markup=keyboard)
 
 
-@bot.message_handler(regexp='^/(?!(0))(\d+)$')
-def show_product(message: types.Message):
-    product_index = int(message.text[1:])
-    if product_index > len(products) or product_index <= 0:
-        bot.reply_to(message, views['NO_PRODUCT'])
-        return
-    if message.is_admin:
-        bot.reply_to(message, product_descriptions[product_index - 1])
-        return
+@bot.message_handler(commands=['menu'])
+def show_menu(message: types.Message):
     keyboard = types.InlineKeyboardMarkup()
-    buy_button = types.InlineKeyboardButton(
-        text='Купить', callback_data=create_event('buy_product', product_index))
-    keyboard.add(buy_button)
-    bot.reply_to(
-        message, product_descriptions[product_index - 1], reply_markup=keyboard)
+    for product_name in PRODUCT_NAMES:
+        keyboard.add(types.InlineKeyboardButton(
+            text=product_name,
+            callback_data=Event.dumps('description', PRODUCT_NAMES.index(product_name))))
+    return bot.send_message(
+        chat_id=message.chat.id,
+        text=VIEWS['MENU'],
+        reply_markup=keyboard)
 
 
 @bot.message_handler(content_types=['text'])
-def no_command(message: types.Message):
-    if (message.text.lower()) == 'меню':
-        product_names_formatted = ''
-        for i in range(product_count):
-            product_names_formatted += f'/{i + 1} {product_names[i]}\n'
-        return bot.send_message(message.chat.id, views['MENU'].format(
-            product_names=product_names_formatted))
-    bot.reply_to(message, views['NO_COMMAND'])
+def get_product(message: types.Message):
+    if message.text in PRODUCT_NAMES:
+        product_name = message.text
+        product_description = PRODUCTS[product_name]
+        product_index = PRODUCT_NAMES.index(product_name)
+        return bot.send_message(
+            chat_id=message.chat.id,
+            text=product_description,
+            reply_markup=buy_button(product_index) if not message.is_admin else None)
+    if message.text.startswith('/'):
+        return bot.reply_to(
+            message=message,
+            text=VIEWS['NO_COMMAND'])
+    return bot.reply_to(
+        message=message,
+        text=VIEWS['NO_PRODUCT'])
 
 
-bot.polling()
+bot.polling(none_stop=True)
