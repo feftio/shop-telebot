@@ -1,3 +1,3 @@
 call .env/Scripts/activate.bat
-python app.py
+python app/app.py
 pause

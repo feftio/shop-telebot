@@ -1,8 +1,11 @@
 from utils import _, get_token, get_admins
+from os import environ as env, path
+import sys
 
-# Configuration
-TOKEN = get_token('secret/token')
-ADMINS = get_admins('secret/admins')
+sys.append(path.abspath(path.join(path.dirname(__file__), '..')))
+
+TOKEN =  get_token(env.get('TOKEN', ''))
+ADMINS = get_admins(env.get('ADMINS', ''))
 PRODUCTS = {
     'Брюки': _('views/products/брюки'),
     'Рубашки': _('views/products/рубашки')
