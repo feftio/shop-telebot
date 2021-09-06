@@ -1,21 +1,22 @@
-from utils import _, get_token, get_admins
-from os import environ as env, path
+from utils import view_callback
+from decouple import config
+from os import path
 import sys
 
-sys.append(path.abspath(path.join(path.dirname(__file__), '..')))
+ROOT_DIR = path.abspath(path.join(path.dirname(__file__), '..'))
+VIEWS_DIR = path.join(ROOT_DIR, config('VIEWS_DIR', 'views'))
+sys.path.append(ROOT_DIR)
+view = view_callback(VIEWS_DIR)
 
-TOKEN =  get_token(env.get('TOKEN', ''))
-ADMINS = get_admins(env.get('ADMINS', ''))
-PRODUCTS = {
-    'Брюки': _('views/products/брюки'),
-    'Рубашки': _('views/products/рубашки')
-}
+TOKEN = config('TOKEN', '').strip()
+ADMINS = config('ADMINS', '').strip()
+PRODUCTS = {}
 VIEWS = {
-    'START': _('views/start'),
-    'START_ADMIN': _('views/start_admin'),
-    'MENU': _('views/menu'),
-    'SENT_ADMIN': _('views/sent_admin'),
-    'SENT': _('views/sent'),
-    'NO_PRODUCT': _('views/no_product'),
-    'NO_COMMAND': _('views/no_command')
+    'START': view('start'),
+    'START_ADMIN': view('start_admin'),
+    'MENU': view('menu'),
+    'SENT_ADMIN': view('sent_admin'),
+    'SENT': view('sent'),
+    'NO_PRODUCT': view('no_product'),
+    'NO_COMMAND': view('no_command')
 }
