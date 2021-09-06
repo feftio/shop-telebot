@@ -1,6 +1,9 @@
 from __future__ import annotations
 import typing as t
-import json
+import sys, json
+from os import path as p
+
+sys.path.append(p.abspath(p.join(p.dirname(__file__), '..')))
 
 class Event:
     NAME_ALIAS: str = 'n'
@@ -17,17 +20,9 @@ class Event:
     def dumps(cls, name: str, data: str) -> str:
         return json.dumps({cls.NAME_ALIAS: name, cls.DATA_ALIAS: data})
 
-def _(name: str, format: str = 'html', join: bool = True) -> t.Union[str, list]:
-    with open(f'{name}.{format}', 'r', encoding='utf-8') as f:
-        lines = f.readlines()
-    if join:
+def view_callback(path: str) -> t.Callable:
+    def get_view(name: str) -> str:
+        with open(p.join(path, f'{name}.html'), 'r', encoding='utf-8') as f:
+            lines = f.readlines()
         return ''.join(lines)
-    return lines
-
-
-def get_admins(name: str, format: str = 'txt'):
-    return list(map(lambda value: int(value), _(name, format).split(',')))
-
-
-def get_token(name: str, format: str = 'txt'):
-    return _(name, format)
+    return get_view
