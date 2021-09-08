@@ -5,6 +5,7 @@ import sys
 
 ROOT_DIR = path.abspath(path.join(path.dirname(__file__), '..'))
 VIEWS_DIR = path.join(ROOT_DIR, config('VIEWS_DIR', 'views'))
+PRODUCTS_DIR = path.join(VIEWS_DIR, "products")
 sys.path.append(ROOT_DIR)
 view = view_callback(VIEWS_DIR)
 
