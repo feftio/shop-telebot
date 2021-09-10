@@ -1,6 +1,6 @@
 from utils import view_callback
 from decouple import config
-from os import path
+from os import path, listdir
 import sys
 
 ROOT_DIR = path.abspath(path.join(path.dirname(__file__), '..'))
@@ -9,15 +9,19 @@ PRODUCTS_DIR = path.join(VIEWS_DIR, "products")
 sys.path.append(ROOT_DIR)
 view = view_callback(VIEWS_DIR)
 
-TOKEN = config('TOKEN', '').strip()
-ADMINS = config('ADMINS', '').strip()
-PRODUCTS = {}
-VIEWS = {
-    'START': view('start'),
-    'START_ADMIN': view('start_admin'),
-    'MENU': view('menu'),
-    'SENT_ADMIN': view('sent_admin'),
-    'SENT': view('sent'),
-    'NO_PRODUCT': view('no_product'),
-    'NO_COMMAND': view('no_command')
-}
+onlyfiles = listdir(PRODUCTS_DIR)
+print(onlyfiles)
+
+
+# TOKEN = config('TOKEN', '').strip()
+# ADMINS = config('ADMINS', '').strip()
+# PRODUCTS = {}
+# VIEWS = {
+#     'START': view('start'),
+#     'START_ADMIN': view('start_admin'),
+#     'MENU': view('menu'),
+#     'SENT_ADMIN': view('sent_admin'),
+#     'SENT': view('sent'),
+#     'NO_PRODUCT': view('no_product'),
+#     'NO_COMMAND': view('no_command')
+# }
