@@ -5,7 +5,7 @@ import sys
 
 ROOT_DIR = path.abspath(path.join(path.dirname(__file__), '..'))
 sys.path.append(ROOT_DIR)
-env = {**dotenv_values("test.env")}
+env = {**dotenv_values('test.env')}  # Must be changed to 'config.env' for production mode
 
 VIEWS_DIR = path.abspath(path.join(ROOT_DIR, env.get('VIEWS_DIR', 'views')))
 PRODUCTS_DIR = path.abspath(
