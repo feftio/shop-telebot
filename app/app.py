@@ -3,7 +3,6 @@ import types as t
 import telebot
 from telebot import apihelper
 from telebot import types
-import json
 import config
 from utils import Event
 
