@@ -7,9 +7,9 @@ ROOT_DIR = path.abspath(path.join(path.dirname(__file__), '..'))
 sys.path.append(ROOT_DIR)
 env = {**dotenv_values("test.env")}
 
-
-VIEWS_DIR = path.join(ROOT_DIR, env.get('VIEWS_DIR', 'views'))
-PRODUCTS_DIR = path.join(VIEWS_DIR, "products")
+VIEWS_DIR = path.abspath(path.join(ROOT_DIR, env.get('VIEWS_DIR', 'views')))
+PRODUCTS_DIR = path.abspath(
+    path.join(ROOT_DIR, env.get('PRODUCTS_DIR', 'products')))
 
 view = content_callback(VIEWS_DIR)
 
