@@ -14,7 +14,7 @@ PRODUCTS_DIR = path.join(VIEWS_DIR, "products")
 view = content_callback(VIEWS_DIR)
 
 TOKEN = env.get('TOKEN', '').strip()
-ADMINS = env.get('ADMINS', '').strip()
+ADMINS = [int(i) for i in env.get('ADMINS', '').strip().split(',')]
 PRODUCTS = dictify(PRODUCTS_DIR)
 VIEWS = {
     'START': view('start'),
