@@ -1,9 +1,11 @@
 from __future__ import annotations
 import typing as t
-import sys, json
-from os import path as p
+import sys
+import json
+from os import path as p, listdir
 
 sys.path.append(p.abspath(p.join(p.dirname(__file__), '..')))
+
 
 class Event:
     NAME_ALIAS: str = 'n'
@@ -20,9 +22,20 @@ class Event:
     def dumps(cls, name: str, data: str) -> str:
         return json.dumps({cls.NAME_ALIAS: name, cls.DATA_ALIAS: data})
 
-def view_callback(path: str) -> t.Callable:
-    def get_view(name: str) -> str:
+
+def content_callback(path: str) -> t.Callable:
+    def get_content(name: str) -> str:
         with open(p.join(path, f'{name}.html'), 'r', encoding='utf-8') as f:
             lines = f.readlines()
         return ''.join(lines)
-    return get_view
+    return get_content
+
+
+def dictify(path: str) -> t.Dict[str, str]:
+    _dict, content = dict(), content_callback(path)
+    for filename in listdir(path):
+        if not p.isfile(p.join(path, filename)):
+            continue
+        key = p.splitext(filename)[0]
+        _dict[key] = content(key)
+    return _dict
