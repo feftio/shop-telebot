@@ -22,8 +22,23 @@ bot: telebot.TeleBot = telebot.TeleBot(token=TOKEN, parse_mode='HTML')
 
 def buy_button(product_index: int):
     return types.InlineKeyboardMarkup().add(types.InlineKeyboardButton(
-        text="Купить",
+        text='Купить',
         callback_data=Event.dumps('buy', product_index)))
+
+
+def product(product_index: t.Optional[int] = None):
+    class _dict(dict):
+        __getattr__ = dict.get
+        __setattr__ = dict.__setitem__
+        __delattr__ = dict.__delattr__
+
+    return _dict(
+        current=None if product_index is None else PRODUCT_NAMES[product_index],
+        index=product_index,
+        names=PRODUCT_NAMES,
+        descriptions=PRODUCT_DESCRIPTIONS,
+        count=PRODUCT_COUNT
+    )
 
 
 @bot.middleware_handler(update_types=['message'])
@@ -39,13 +54,16 @@ def query_handler(call: types.CallbackQuery):
     event = Event.loads(call.data)
     if event.name == 'buy':
         for admin in ADMINS:
-            bot.send_message(chat_id=admin, text=VIEWS['SENT_ADMIN'].format(
-                user_id=call.from_user.id,
-                user_name=call.from_user.full_name,
-                product_name=PRODUCT_NAMES[event.data]))
+            bot.send_message(
+                chat_id=admin,
+                text=VIEWS['SENT_ADMIN'].format(
+                    call=call,
+                    product=product(event.data)))
         return bot.send_message(
             chat_id=call.from_user.id,
-            text=VIEWS['SENT'])
+            text=VIEWS['SENT'].format(
+                call=call,
+                product=product(event.data)))
     if event.name == 'description':
         return bot.send_message(
             chat_id=call.from_user.id,
@@ -61,11 +79,11 @@ def start(message: types.Message):
     if message.is_admin:
         return bot.send_message(
             chat_id=message.chat.id,
-            text=VIEWS['START_ADMIN'],
+            text=VIEWS['START_ADMIN'].format(message=message),
             reply_markup=keyboard)
     bot.send_message(
         chat_id=message.chat.id,
-        text=VIEWS['START'],
+        text=VIEWS['START'].format(message=message),
         reply_markup=keyboard)
 
 
@@ -95,10 +113,10 @@ def get_product(message: types.Message):
     if message.text.startswith('/'):
         return bot.reply_to(
             message=message,
-            text=VIEWS['NO_COMMAND'])
+            text=VIEWS['NO_COMMAND'].format(message=message))
     return bot.reply_to(
         message=message,
-        text=VIEWS['NO_PRODUCT'])
+        text=VIEWS['NO_PRODUCT'].format(message=message))
 
 
 bot.polling(none_stop=True)
