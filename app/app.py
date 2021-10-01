@@ -78,7 +78,7 @@ def show_menu(message: types.Message):
             callback_data=Event.dumps('description', PRODUCT_NAMES.index(product_name))))
     return bot.send_message(
         chat_id=message.chat.id,
-        text=VIEWS['MENU'],
+        text=VIEWS['MENU'].format(message=message),
         reply_markup=keyboard)
 
 
